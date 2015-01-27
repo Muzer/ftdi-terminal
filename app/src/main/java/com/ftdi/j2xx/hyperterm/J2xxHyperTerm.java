@@ -1,31 +1,21 @@
 package com.ftdi.j2xx.hyperterm;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import com.ftdi.j2xx.hyperterm.R;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
-
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-
 import android.graphics.Color;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -44,12 +34,18 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
-import android.util.Log;
 
 import com.ftdi.j2xx.D2xxManager;
 import com.ftdi.j2xx.FT_Device;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 public class J2xxHyperTerm extends Activity 
 {
@@ -612,7 +608,7 @@ public class J2xxHyperTerm extends Activity
 				}
 				
 				// check whether there is some data 
-				if (writeText.length() != 0x00) 
+				if (writeText.length() != 0x00)
 				{
 					// check format
 					if(false == bFormatHex) // character format
@@ -638,10 +634,10 @@ public class J2xxHyperTerm extends Activity
 					{
 						if(writeText.length()%2 != 0)
 						{
-							midToast("Incorrect input for HEX format."
-									+"\nIt should be 2 bytes for each HEX word.",Toast.LENGTH_SHORT);
+							midToast("Incorrect input for hexadecimal format."
+									+"\nPlease use two hex digits per byte.",Toast.LENGTH_SHORT);
 							return;
-						}	
+						}
 						
 						String temp = writeText.getText().toString();
 						try
@@ -659,9 +655,9 @@ public class J2xxHyperTerm extends Activity
 						}
 						catch(IllegalArgumentException e)
 						{
-							midToast("Incorrect input for HEX format."
-								    +"\nAllowed charater: 0~9, a~f and A~F",Toast.LENGTH_SHORT);
-							DLog.e(TT,"Illeagal HEX input.");
+							midToast("Incorrect input for hexadecimal format."
+								    +"\nAllowed characters: 0~9, a~f and A~F",Toast.LENGTH_SHORT);
+							DLog.e(TT,"Illegal HEX input.");
 							return;
 						}
 						
