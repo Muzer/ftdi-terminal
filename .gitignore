@@ -1,2 +1,6 @@
 *.apk
 *.jar
+*.bin
+*.class
+build
+app/build

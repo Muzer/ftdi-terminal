@@ -3,7 +3,7 @@
     android:orientation="vertical"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    >
+    android:id="@+id/Layout">
 
     
  <!-- Title area -->
@@ -127,7 +127,7 @@
 			android:gravity="center"
 			android:scaleType="centerInside"
 			android:background="@drawable/button_pattern"			
-			android:text="Write"
+			android:text="Send"
 			/>  			 			
 	
 	</LinearLayout>
@@ -144,7 +144,7 @@
         android:layout_weight="1"
         android:background="#505050"
         android:tag="configure block"
-        android:visibility="gone"        
+        android:visibility="visible"
         >
 
     	<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -187,7 +187,7 @@
 	    android:layout_height="fill_parent"
 	    android:layout_weight="1"
 	    >
-	        <TextView android:text="Stop(bit)"
+	        <TextView android:text="Stop bits"
 		    		  android:id="@+id/stopBit"
 		    		  android:layout_height="fill_parent"
 		    		  android:layout_width="fill_parent"
@@ -214,7 +214,7 @@
 	    android:layout_height="fill_parent"
 	    android:layout_weight="1"
 	    >
-		     <TextView android:text="Data(bit)"
+		     <TextView android:text="Data bits"
 		    		  android:id="@+id/dataBit"
 		    		  android:layout_height="fill_parent"
 		    		  android:layout_width="fill_parent"
@@ -322,7 +322,7 @@
 		 			android:scaleType="centerInside"
 		 			android:background="@drawable/button_pattern"
 		 			android:layout_weight="1"
-		 			android:text="Configure"
+		 			android:text="Apply"
 		 	/>	
 
 	   </LinearLayout>

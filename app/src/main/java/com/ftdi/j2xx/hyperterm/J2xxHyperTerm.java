@@ -122,7 +122,7 @@ public class J2xxHyperTerm extends Activity
     final byte XOFF = 0x13;    /* Pause transmission */
     
 	// strings of file transfer protocols
-    final String[] protocolItems = {"ASCII","XModem-CheckSum","XModem-CRC","XModem-1KCRC","YModem","ZModem"};
+    final String[] protocolItems = {"ASCII","XModem-Checksum","XModem-CRC","XModem-1KCRC","YModem","ZModem"};
     String currentProtocol;
     
 	final int MODE_GENERAL_UART = 0;
@@ -141,7 +141,7 @@ public class J2xxHyperTerm extends Activity
 	int transferMode = MODE_GENERAL_UART;
 	int tempTransferMode = MODE_GENERAL_UART;
 
-	// X, Y, Z modem - UART MODE: Asynchronous¡B8 data¡Ðbits¡Bno parity¡Bone stop¡Ðbit
+	// X, Y, Z modem - UART MODE: Asynchronousï¿½B8 dataï¿½ï¿½bitsï¿½Bno parityï¿½Bone stopï¿½ï¿½bit
 	// X modem + //
 	final int PACTET_SIZE_XMODEM_CHECKSUM = 132; // SOH,pkt,~ptk,128data,checksum
 	final int PACTET_SIZE_XMODEM_CRC = 133;  	 // SOH,pkt,~ptk,128data,CRC-H,CRC-L
@@ -407,7 +407,7 @@ public class J2xxHyperTerm extends Activity
 	   	{
 	   		ftD2xx = D2xxManager.getInstance(this);
 	   	}
-	   	catch (D2xxManager.D2xxException e) {Log.e("FTDI_HT","getInstance fail!!");}
+	   	catch (D2xxManager.D2xxException e) {Log.e("FTDI_HT","getInstance fail!");}
 	   	
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
@@ -1704,7 +1704,7 @@ public class J2xxHyperTerm extends Activity
 			if(timesMessageHexFormatWriteData < 3)
 			{
 				timesMessageHexFormatWriteData++;
-				midToast("The writing data won¡¦t be showed on data area while content format is hexadecimal format.",Toast.LENGTH_LONG);
+				midToast("The writing data wonï¿½ï¿½t be showed on data area while content format is hexadecimal format.",Toast.LENGTH_LONG);
 			}
 			return;
 		}
