@@ -605,6 +605,8 @@ public class J2xxHyperTerm extends Activity
 					}
 					else  // hexadecimal format
 					{
+                        // strip spaces
+                        writeText.setText(writeText.getText().toString().replaceAll(" ", ""));
 						if(writeText.length()%2 != 0)
 						{
 							midToast("Incorrect input for hexadecimal format."
@@ -1678,14 +1680,11 @@ public class J2xxHyperTerm extends Activity
 	// add data to UI(@+id/ReadValues)
 	void appendData(String data) 
 	{
+        boolean wasHex = false;
 		if(bContentFormatHex)
 		{
-			if(timesMessageHexFormatWriteData < 3)
-			{
-				timesMessageHexFormatWriteData++;
-				midToast("The written data will not be echoed while data format is hexadecimal.",Toast.LENGTH_LONG);
-			}
-			return;
+            wasHex = true;
+			toggleContentHexFormat(false);
 		}
 
 		if(bSendHexData)
@@ -1727,6 +1726,10 @@ public class J2xxHyperTerm extends Activity
 		}
 
 		scrollView.smoothScrollTo(0, readText.getHeight() + 30);
+        if(wasHex)
+        {
+            toggleContentHexFormat(true);
+        }
 	}
 
 	// for uart settings: baud rate, stop bit and etc. selection
@@ -2676,11 +2679,7 @@ public class J2xxHyperTerm extends Activity
 				} 
 				catch (InterruptedException e) {e.printStackTrace();}
 
-				if(bContentFormatHex) // consume input data at hex content format
-				{
-					status = readData(UI_READ_BUFFER_SIZE, readBuffer);
-				}
-				else if(MODE_GENERAL_UART == transferMode)
+				if(MODE_GENERAL_UART == transferMode)
 				{
 					status = readData(UI_READ_BUFFER_SIZE, readBuffer);
 					
