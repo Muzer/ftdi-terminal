@@ -359,6 +359,24 @@ public class J2xxHyperTerm extends Activity
 
 	boolean bReadTheadEnable = false;
 
+    public void applyConfig()
+    {
+        // always check whether there is a device or not
+        createDeviceList();
+        if(DevCount > 0)
+        {
+            connectFunction();
+        }
+
+        if(DeviceStatus.DEV_NOT_CONNECT  == checkDevice())
+        {
+            return;
+        }
+
+        setConfig(baudRate, dataBit, stopBit, parity, flowControl);
+
+        uart_configured = true;
+    }
 	
 	/** Called when the activity is first created. */
 	@Override
@@ -502,21 +520,7 @@ public class J2xxHyperTerm extends Activity
 		{
 			public void onClick(View v) 
 			{
-				// always check whether there is a device or not
-				createDeviceList();
-				if(DevCount > 0)
-				{
-					connectFunction();
-				}
-				
-				if(DeviceStatus.DEV_NOT_CONNECT  == checkDevice())
-				{
-					return;
-				}
-				
-				setConfig(baudRate, dataBit, stopBit, parity, flowControl);
-
-				uart_configured = true;
+				applyConfig();
 				toggleMenuSetting();
 			}
 		});
@@ -1731,6 +1735,7 @@ public class J2xxHyperTerm extends Activity
 		public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
 		{
 			baudRate = Integer.parseInt(parent.getItemAtPosition(pos).toString());
+            applyConfig();
 		}
 
 		public void onNothingSelected(AdapterView<?> parent) {}
@@ -1741,6 +1746,7 @@ public class J2xxHyperTerm extends Activity
 		public void onItemSelected(AdapterView<?> parent, View view, int pos,long id)
 		{
 			stopBit = (byte) Integer.parseInt(parent.getItemAtPosition(pos).toString());
+            applyConfig();
 		}
 
 		public void onNothingSelected(AdapterView<?> parent) {}
@@ -1751,6 +1757,7 @@ public class J2xxHyperTerm extends Activity
 		public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
 		{
 			dataBit = (byte) Integer.parseInt(parent.getItemAtPosition(pos).toString());
+            applyConfig();
 		}
 
 		public void onNothingSelected(AdapterView<?> parent) {}
@@ -1782,6 +1789,7 @@ public class J2xxHyperTerm extends Activity
 			{
 				parity = 4;
 			}
+            applyConfig();
 		}
 
 		public void onNothingSelected(AdapterView<?> parent) {}
@@ -1810,6 +1818,7 @@ public class J2xxHyperTerm extends Activity
 			{
 				flowControl = 3;
 			}
+            applyConfig();
 		}
 
 		public void onNothingSelected(AdapterView<?> parent) {}
@@ -1819,6 +1828,7 @@ public class J2xxHyperTerm extends Activity
 		public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
 		{
 			portIndex = Integer.parseInt(parent.getItemAtPosition(pos).toString());
+            applyConfig();
 		}
 
 		public void onNothingSelected(AdapterView<?> parent) {}
