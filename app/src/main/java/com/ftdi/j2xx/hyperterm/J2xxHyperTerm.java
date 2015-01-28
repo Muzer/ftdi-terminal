@@ -73,10 +73,12 @@ public class J2xxHyperTerm extends Activity
     final int MENU_ECHO = Menu.FIRST + 4;
     final int MENU_HELP = Menu.FIRST + 5;   
     final int MENU_SETTING = Menu.FIRST + 6;
+    final int MENU_LF = Menu.FIRST + 7;
     
     final String[] contentFormatItems = {"Character","Hexadecimal"};
     final String[] fontSizeItems = {"5","6","7","8","10","12","14","16","18","20"};
     final String[] echoSettingItems = {"On","Off"};
+    final String[] lfSettingItems = {"On", "Off"};
     
 	// log tag
 	final String TT = "Trace";
@@ -307,6 +309,7 @@ public class J2xxHyperTerm extends Activity
 	boolean bContentFormatHex = false;
 	int contentFontSize = 12;
 	boolean bWriteEcho = true;
+    boolean bAppendLf = false;
 
 	// show information message while send data by tapping "Write" button in hex content format
 	int timesMessageHexFormatWriteData = 0;
@@ -575,9 +578,13 @@ public class J2xxHyperTerm extends Activity
 					// check format
 					if(!bFormatHex) // character format
 					{
+                        if(bAppendLf)
+                        {
+                            writeText.append("\n");
+                        }
 						if(bWriteEcho)
 						{
-							String temp = writeText.getText() + "\n";
+							String temp = writeText.getText().toString();
 							String tmp = temp.replace("\\n", "\n");
 							appendData(tmp);
 						}
@@ -862,6 +869,7 @@ public class J2xxHyperTerm extends Activity
 		myMenu.add(0, MENU_SAVE_CONTENT_DATA, 0, "Save data");
 		myMenu.add(0, MENU_CLEAN_SCREEN, 0, "Clear screen");
 		myMenu.add(0, MENU_ECHO, 0, "Echo - On");
+        myMenu.add(0, MENU_LF, 0, "Append LF - Off");
 		myMenu.add(0, MENU_HELP, 0, "Online help");
 		return super.onCreateOptionsMenu(myMenu);
 	}
@@ -980,7 +988,26 @@ public class J2xxHyperTerm extends Activity
 			}).show();           	
         	
         	break;
-        	
+
+        case MENU_LF:
+            new AlertDialog.Builder(global_context).setTitle("Append line feeds")
+                    .setItems(lfSettingItems, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which)
+                        {
+                            MenuItem item = myMenu.findItem(MENU_LF);
+                            if(0 == which) {
+                                bAppendLf = true;
+                                item.setTitle("Append LF - On");
+                            }
+                            else if(1 == which)
+                            {
+                                bAppendLf = false;
+                                item.setTitle("Append LF - Off");
+                            }
+                        }
+                    }).show();
+            break;
         case MENU_HELP:
         {
         	File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Download/AN_242_FTDI_UART_Terminal_User_Manual.pdf");
