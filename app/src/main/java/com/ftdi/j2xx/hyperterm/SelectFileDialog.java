@@ -52,7 +52,7 @@ public class SelectFileDialog extends Dialog {
 
         builder.setTitle(currentPath.getPath());
         if (selectDirectoryOption) {
-            builder.setPositiveButton("Select Directory", new OnClickListener() {
+            builder.setPositiveButton("Select directory", new OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     DLog.e(TAG,"onClick:"+ currentPath.getPath());
                     fireDirectorySelectedEvent(currentPath);
@@ -160,7 +160,7 @@ public class SelectFileDialog extends Dialog {
                     if (!sel.canRead()) return false;
                     if (selectDirectoryOption) return sel.isDirectory();
                     else {
-                        boolean endsWith = fileEndsWith != null ? filename.toLowerCase().endsWith(fileEndsWith) : true;
+                        boolean endsWith = fileEndsWith == null || filename.toLowerCase().endsWith(fileEndsWith);
                         return endsWith || sel.isDirectory();
                     }
                 }
@@ -179,7 +179,7 @@ public class SelectFileDialog extends Dialog {
     }
 
     public void setFileEndsWith(String fileEndsWith) {
-        this.fileEndsWith = fileEndsWith != null ? fileEndsWith.toLowerCase() : fileEndsWith;
+        this.fileEndsWith = fileEndsWith != null ? fileEndsWith.toLowerCase() : null;
     }
     
     public void setActionCode(int actionCode)

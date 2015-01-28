@@ -148,7 +148,6 @@ public class J2xxHyperTerm extends Activity
     final byte EOT = 4;    /* End Of Transmission */
     final byte ACK = 6;    /* ACKnowlege */
     final byte NAK = 0x15; /* Negative AcKnowlege */
-    final byte CAN = 0x18; /* Cancel */
     final byte CHAR_C = 0x43; /* Character 'C' */
     final byte CHAR_G = 0x47; /* Character 'G' */
     
@@ -166,8 +165,7 @@ public class J2xxHyperTerm extends Activity
     boolean bModemGetNak = false;
     boolean bModemGetAck = false;
     boolean bModemGetCharC = false;
-    boolean bModemGetCharG = false;
-    
+
     int totalModemReceiveDataBytes = 0;
     int totalErrorCount = 0;
     boolean bDataReceived = false;
@@ -201,25 +199,16 @@ public class J2xxHyperTerm extends Activity
     String modemFileSize;
     int modemRemainData = 0;
     // Y modem -//
-    
-    // Z modem +//
-    final int ZCRC_HEAD_SIZE = 4;
-    
-    final byte ZPAD = 0x2A; // '*' 052 Padding character begins frames 
-    final byte ZDLE = 0x18;     
-    final byte ZDLEE = ZDLE^0100;   /* Escaped ZDLE as transmitted */
-    
+
+    final byte ZPAD = 0x2A; // '*' 052 Padding character begins frames
+    final byte ZDLE = 0x18;
+
     final byte ZBIN = 0x41;		// 'A' Binary frame indicator (CRC-16)
     final byte ZHEX = 0x42;		// 'B' HEX frame indicator
     final byte ZBIN32 = 0x43;	// 'C' Binary frame with 32 bit CRC
-    
-    final byte LF = 0x0A;
-    final byte CR = 0x0D;    
-    
+
     final int ZRQINIT = 0;   /* Request receive init */
     final int ZRINIT = 1;   /* Receive init */
-    final int ZSINIT = 2;    /* Send init sequence (optional) */
-    final int ZACK = 3;      /* ACK to above */
     final int ZFILE = 4;     /* File name from sender */
     final int ZSKIP = 5;     /* To sender: skip this file */
     final int ZNAK = 6;      /* Last packet was garbled */
@@ -231,14 +220,6 @@ public class J2xxHyperTerm extends Activity
     final int ZFIN_ACK = 22;
     
     final int ZEOF = 11;     /* End of file */
-    final int ZFERR = 12;    /* Fatal Read or Write error Detected */
-    final int ZCRC = 13;     /* Request for file CRC and response */
-    final int ZCHALLENGE = 14;   /* Receiver's Challenge */
-    final int ZCOMPL = 15;   /* Request is complete */
-    final int ZCAN = 16;     /* Other end canned session with CAN*5 */
-    final int ZFREECNT = 17; /* Request for free bytes on filesystem */
-    final int ZCOMMAND = 18; /* Command from sending program */
-    final int ZSTDERR = 19;  /* Output to standard error, data follows */
     final int ZOO = 20;
     
     final int ZCRCE = 0x68; // no data
@@ -248,15 +229,6 @@ public class J2xxHyperTerm extends Activity
     final int ZDLE_END_SIZE_4 = 4; // zdle ZCRC? crc1 crc2
     final int ZDLE_END_SIZE_5 = 5; // zdle ZCRC? zdle crc1 crc2 || zdle ZCRC? crc1 zdle crc2
     final int ZDLE_END_SIZE_6 = 6; // zdle ZCRC? zdle crc1 zdle crc2
-    
-    final int ZF0 = 3;   /* First flags byte */
-    final int ZF1 = 2;
-    final int ZF2 = 1;
-    final int ZF3 = 0;
-    final int ZP0 = 0;   /* Low order 8 bits of position */
-    final int ZP1 = 1;
-    final int ZP2 = 2;
-    final int ZP3 = 3;   /* High order 8 bits of file position */
 
     int zmodemState = 0;
 
@@ -310,8 +282,7 @@ public class J2xxHyperTerm extends Activity
 
 	// graphical objects    
 	TextView uartInfo;
-	TextView contentFormatText;
-	ScrollView scrollView;
+    ScrollView scrollView;
 	TextView readText;
 	EditText writeText;
 	Spinner baudSpinner;
@@ -362,15 +333,8 @@ public class J2xxHyperTerm extends Activity
 
 	//public static final int maxReadLength = 256;
 	byte[] usbdata;
-	char[] readDataToText;
-	public int iavailable = 0;
-	
-	// file access//
-	FileInputStream inputstream;
-	FileOutputStream outputstream;
-	
-	FileWriter file_writer;
-	FileReader file_reader;
+    public int iavailable = 0;
+
     FileInputStream fis_open;
     FileOutputStream fos_save;
 	BufferedOutputStream buf_save;	
@@ -382,10 +346,8 @@ public class J2xxHyperTerm extends Activity
 	int sendByteCount = 0;
 	long start_time, end_time;
 	long cal_time_1, cal_time_2;
-	
-	// data buffer
-	byte[] writeDataBuffer;
-	byte[] readDataBuffer; /* circular buffer */
+
+    byte[] readDataBuffer; /* circular buffer */
 	
 	int iTotalBytes;
 	int iReadIndex;
@@ -584,7 +546,7 @@ public class J2xxHyperTerm extends Activity
 		{
 			public void onClick(View v) 
 			{
-				if(bFormatHex == false)
+				if(!bFormatHex)
 				{
 					formatButton.setText("HEX");
 					bFormatHex = true;
@@ -611,9 +573,9 @@ public class J2xxHyperTerm extends Activity
 				if (writeText.length() != 0x00)
 				{
 					// check format
-					if(false == bFormatHex) // character format
+					if(!bFormatHex) // character format
 					{
-						if(true == bWriteEcho)
+						if(bWriteEcho)
 						{
 							String temp = writeText.getText() + "\n";
 							String tmp = temp.replace("\\n", "\n");
@@ -661,7 +623,7 @@ public class J2xxHyperTerm extends Activity
 							return;
 						}
 						
-						if(true == bWriteEcho)
+						if(bWriteEcho)
 						{
 							temp += "(hex)\n";
 							String tmp = temp.replace("\\n", "\n");
@@ -688,12 +650,12 @@ public class J2xxHyperTerm extends Activity
 			
 				DLog.e(TT,"log button clicked");
 
-				if(false == checkContentFormat())
+				if(!checkContentFormat())
 				{
-					return;
+                    toggleContentHexFormat(false);
 				}				
 				
-				if(false == bLogButtonClick)
+				if(!bLogButtonClick)
 				{
 					resetStatusData();
 					new AlertDialog.Builder(global_context).setTitle("Protocol")
@@ -742,7 +704,7 @@ public class J2xxHyperTerm extends Activity
 								return;
 							}
 							
-							DLog.e(TT,"logbutton w1 transferMode:"+transferMode+" UART:" + (bUartModeTaskSet?"True":"False"));
+							DLog.e(TT,"log button w1 transferMode:"+transferMode+" UART:" + (bUartModeTaskSet?"True":"False"));
 				
 							if(MODE_Y_MODEM_1K_CRC_RECEIVE == tempTransferMode || 
 							   MODE_Z_MODEM_RECEIVE == tempTransferMode)
@@ -755,8 +717,8 @@ public class J2xxHyperTerm extends Activity
 							else
 							{
 								// select file
-								final String[] actItems = {"Create New File","Save to File"};
-								new AlertDialog.Builder(global_context).setTitle("File Destination")
+								final String[] actItems = {"Create a new file","Save to an existing file"};
+								new AlertDialog.Builder(global_context).setTitle("File destination")
 									.setItems(actItems, new DialogInterface.OnClickListener() 
 									{
 										@Override
@@ -819,12 +781,12 @@ public class J2xxHyperTerm extends Activity
 
 				DLog.e(TT,"send button clicked");
 				
-				if(false == checkContentFormat())
+				if(!checkContentFormat())
 				{
-					return;
+                    toggleContentHexFormat(false);
 				}
 				
-				if(false == bSendButtonClick)
+				if(!bSendButtonClick)
 				{
 					resetStatusData();
 					new AlertDialog.Builder(global_context).setTitle("Protocol").setItems(protocolItems, new DialogInterface.OnClickListener() 
@@ -868,7 +830,7 @@ public class J2xxHyperTerm extends Activity
 									return;
 								}
 								
-								DLog.e(TT,"sendbutton w1 tempTransferMode:"+tempTransferMode+" UART:" + (bUartModeTaskSet?"True":"False"));
+								DLog.e(TT,"send button w1 tempTransferMode:"+tempTransferMode+" UART:" + (bUartModeTaskSet?"True":"False"));
 								
 								fileDialog.setSelectDirectoryOption(false);
 								fileDialog.setActionCode(ACT_SELECT_SEND_FILE_NAME);							
@@ -894,13 +856,13 @@ public class J2xxHyperTerm extends Activity
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		myMenu = menu;
-		myMenu.add(0, MENU_SETTING, 0, "Setting");
-		myMenu.add(0, MENU_CONTENT_FORMAT, 0, "Content Format");
-		myMenu.add(0, MENU_FONT_SIZE, 0, "Font Size");
-		myMenu.add(0, MENU_SAVE_CONTENT_DATA, 0, "Save Content Data");
-		myMenu.add(0, MENU_CLEAN_SCREEN, 0, "Clean Screen");
+		myMenu.add(0, MENU_SETTING, 0, "Settings");
+		myMenu.add(0, MENU_CONTENT_FORMAT, 0, "Display format");
+		myMenu.add(0, MENU_FONT_SIZE, 0, "Font size");
+		myMenu.add(0, MENU_SAVE_CONTENT_DATA, 0, "Save data");
+		myMenu.add(0, MENU_CLEAN_SCREEN, 0, "Clear screen");
 		myMenu.add(0, MENU_ECHO, 0, "Echo - On");
-		myMenu.add(0, MENU_HELP, 0, "Online Help");
+		myMenu.add(0, MENU_HELP, 0, "Online help");
 		return super.onCreateOptionsMenu(myMenu);
 	}
 
@@ -914,7 +876,7 @@ public class J2xxHyperTerm extends Activity
         	
         case MENU_CONTENT_FORMAT:
         	
-        	new AlertDialog.Builder(global_context).setTitle("Content Format")
+        	new AlertDialog.Builder(global_context).setTitle("Display format")
 			.setItems(contentFormatItems, new DialogInterface.OnClickListener() 
 			{
 				@Override
@@ -922,14 +884,14 @@ public class J2xxHyperTerm extends Activity
 				{	
 					if(0 == which)
 					{
-						if(true ==  bContentFormatHex)
+						if(bContentFormatHex)
 						{
 							toggleContentHexFormat(false);
 						}
 					}
 					else if(1 == which)
 					{
-						if(false ==  bContentFormatHex)
+						if(!bContentFormatHex)
 						{
 							toggleContentHexFormat(true);
 						}
@@ -941,7 +903,7 @@ public class J2xxHyperTerm extends Activity
             
         case MENU_FONT_SIZE:
         	
-			new AlertDialog.Builder(global_context).setTitle("Font Size")
+			new AlertDialog.Builder(global_context).setTitle("Font size")
 			.setItems(fontSizeItems, new DialogInterface.OnClickListener() 
 			{
 				@Override
@@ -957,9 +919,9 @@ public class J2xxHyperTerm extends Activity
         case MENU_SAVE_CONTENT_DATA:
         {	
         	
-    		if(true == bSendButtonClick || true == bLogButtonClick)
+    		if(bSendButtonClick || bLogButtonClick)
     		{
-    			midToast("Can't save content data to file during sending file and saving data.",Toast.LENGTH_LONG);    		
+    			midToast("Can't save data while sending a file or logging data.",Toast.LENGTH_LONG);
     		}
     		else
     		{
@@ -967,8 +929,8 @@ public class J2xxHyperTerm extends Activity
 				tempTransferMode = MODE_SAVE_CONTENT_DATA;
 	        	
 				// select file
-				final String[] actItems = {"Create New File","Save to File"};
-				new AlertDialog.Builder(global_context).setTitle("File Destination")
+				final String[] actItems = {"Create a new file","Save to an existing file"};
+				new AlertDialog.Builder(global_context).setTitle("File destination")
 					.setItems(actItems, new DialogInterface.OnClickListener() 
 					{
 						@Override
@@ -1023,7 +985,7 @@ public class J2xxHyperTerm extends Activity
         {
         	File file = new File(android.os.Environment.getExternalStorageDirectory() + "/Download/AN_242_FTDI_UART_Terminal_User_Manual.pdf");
 
-        	if(true == file.exists())
+        	if(file.exists())
         	{
         		// open file
         		Uri path = Uri.fromFile(file);
@@ -1036,7 +998,7 @@ public class J2xxHyperTerm extends Activity
         		}
         		catch (ActivityNotFoundException e)
         		{
-        			midToast("Can't open help file. Please manually open it in the /Download folder.", Toast.LENGTH_SHORT);
+        			midToast("Can't open help file. Please manually open it from the /Download folder.", Toast.LENGTH_SHORT);
         		}
         	}
         	else
@@ -1064,36 +1026,27 @@ public class J2xxHyperTerm extends Activity
     
     boolean checkContentFormat()
     {
-    	if(true == bContentFormatHex)
-    	{
-    		midToast("Please change content format to Charater before tranfer file.",Toast.LENGTH_LONG);
-    		return false;
-    	}
-    	
-    	return true;
+    	return !bContentFormatHex;
     }
     
 	void setLogButton() 
 	{		
 		bLogButtonClick = true;
-		logButton.setText("Stop Saving");
-		logButton.setBackgroundResource(R.drawable.button_pattern_2);
+		logButton.setText("Stop logging");
 		sendButton.setClickable(false);
 	}
 
 	void resetLogButton() 
 	{
 		bLogButtonClick = false;
-		logButton.setText("Save to File");
-		logButton.setBackgroundResource(R.drawable.button_pattern);
+		logButton.setText("Log data");
 		sendButton.setClickable(true);
 	}
 	
 	void setSendButton() 
 	{
 		bSendButtonClick = true;		
-		sendButton.setText("Stop Sending");
-		sendButton.setBackgroundResource(R.drawable.button_pattern_2);
+		sendButton.setText("Stop sending");
 		logButton.setClickable(false);
 		writeButton.setClickable(false);
 	}
@@ -1103,8 +1056,7 @@ public class J2xxHyperTerm extends Activity
 		transferMode = MODE_GENERAL_UART;
 		bUartModeTaskSet = true;		
 		bSendButtonClick = false;		
-		sendButton.setText("Send File");
-		sendButton.setBackgroundResource(R.drawable.button_pattern);
+		sendButton.setText("Send file");
 		logButton.setClickable(true);
 		writeButton.setClickable(true);
 	}
@@ -1120,7 +1072,7 @@ public class J2xxHyperTerm extends Activity
 		LayoutInflater inflater = getLayoutInflater();
 		View layout = inflater.inflate(R.layout.file_name_dialog, (ViewGroup) findViewById(R.id.filenamedialog));
 		
-		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this).setTitle("Create New File").
+		AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this).setTitle("Create a new file").
 			setView(layout).setPositiveButton("OK", null).
 			setNegativeButton("Cancel", null);
 				
@@ -1158,7 +1110,7 @@ public class J2xxHyperTerm extends Activity
 	    	}
 	    	else if(sfname.matches(".*[:?\\s/\"<>|\\*]+.*") || sfname.contains("\\"))
 	    	{
-	    		midToast("A file name can't contain space or any of "
+	    		midToast("A file name can't contain a space or any of "
 	    	            +"\nthe following characters: \\ / : * ? \" < > ", Toast.LENGTH_SHORT);
 	    	}
 	    	else
@@ -1171,7 +1123,7 @@ public class J2xxHyperTerm extends Activity
 	    }
 	}
 	
-	// In Y, Z modem, they should selecet a folder for the file transfer 
+	// In Y, Z modem, they should select a folder for the file transfer
 	void getModemSelectedFolder()
 	{
 		File fFolder = fileDialog.getChosenFolder();
@@ -1187,7 +1139,7 @@ public class J2xxHyperTerm extends Activity
 			DLog.e(TT,"ymodem rec 1k crc -  send C");
 			sendData(CHAR_C);
 
-			updateStatusData("YModem - Wait data...");
+			updateStatusData("YModem - Waiting for data...");
 			
 			YModemReadDataThread ymReadThread = new YModemReadDataThread(handler);
 			ymReadThread.start();
@@ -1197,14 +1149,14 @@ public class J2xxHyperTerm extends Activity
 		}
 		else if(MODE_Z_MODEM_RECEIVE == transferMode)
 		{
-			updateStatusData("ZModem - Wait data...");
+			updateStatusData("ZModem - Waiting for data...");
 			zmodemState = ZRQINIT;
 			ZModemReadDataThread zmReadThread = new ZModemReadDataThread(handler);
 			zmReadThread.start();
 		}
 		else
 		{
-			DLog.e(TT,"NG CASE!!!!!!!!!!!!!!!!");
+			DLog.e(TT,"NG CASE!");
 		}
 	}
 	
@@ -1235,11 +1187,11 @@ public class J2xxHyperTerm extends Activity
 
 		modemRemainData = iFileSize = Integer.parseInt(modemFileSize);
 		if(iFileSize <= 1024)
-			fileNameInfo = "File:" + modemFileName + "("+ iFileSize +"Bytes)";
+			fileNameInfo = "File: " + modemFileName + "("+ iFileSize +" Bytes)";
 		else if(iFileSize <= 1048576)
-			fileNameInfo = "File:" + modemFileName + "("+ new java.text.DecimalFormat("#.00").format(iFileSize/(double)1024) +"KB)";
+			fileNameInfo = "File: " + modemFileName + "("+ new java.text.DecimalFormat("#.00").format(iFileSize/(double)1024) +"KB)";
 		else
-			fileNameInfo = "File:" + modemFileName + "("+ new java.text.DecimalFormat("#.00").format(iFileSize/(double)1024/1024) +"MB)";
+			fileNameInfo = "File: " + modemFileName + "("+ new java.text.DecimalFormat("#.00").format(iFileSize/(double)1024/1024) +"MB)";
 		
 		WriteFileThread_start = true;
 		return true;
@@ -1250,7 +1202,7 @@ public class J2xxHyperTerm extends Activity
 		DLog.e(TT,"saveFileAction transferMode:"+transferMode+" UART:" + (bUartModeTaskSet?"True":"False"));
 		if(null == fGetFile)
 		{
-			midToast("Selected file null!", Toast.LENGTH_SHORT);
+			midToast("Selected file is null!", Toast.LENGTH_SHORT);
 			return;
 		}
 		else
@@ -1258,7 +1210,7 @@ public class J2xxHyperTerm extends Activity
 			String stemp = fGetFile.toString();
 			String[] tokens = stemp.split("/");
 			fileNameInfo = tokens[tokens.length - 1];
-			midToast("Save data to file:"+fileNameInfo, Toast.LENGTH_SHORT);
+			midToast("Save data to file: "+fileNameInfo, Toast.LENGTH_SHORT);
 		}	
 
 		try 
@@ -1277,7 +1229,7 @@ public class J2xxHyperTerm extends Activity
 			{
 				buf_save.write(tmpData, 0, tmpData.length);
 				
-				midToast("Content data is saved.", Toast.LENGTH_SHORT);
+				midToast("Data saved.", Toast.LENGTH_SHORT);
 
 				buf_save.flush();
 				buf_save.close();
@@ -1300,7 +1252,7 @@ public class J2xxHyperTerm extends Activity
 				DLog.e(TT,"x rec - send NAK");
 				sendData(NAK);
 	
-				updateStatusData("XModem-Checksum - Wait data...");
+				updateStatusData("XModem-Checksum - Waiting for data...");
 				
 				XModemReadDataThread xmReadThread = new XModemReadDataThread(handler);
 				xmReadThread.start();
@@ -1313,7 +1265,7 @@ public class J2xxHyperTerm extends Activity
 				DLog.e(TT,"x rec crc -  send C");
 				sendData(CHAR_C);
 				
-				updateStatusData("XModem-CRC - Wait data...");
+				updateStatusData("XModem-CRC - Waiting for data...");
 				
 				XModemReadDataThread xmReadThread = new XModemReadDataThread(handler);
 				xmReadThread.start();
@@ -1326,7 +1278,7 @@ public class J2xxHyperTerm extends Activity
 				DLog.e(TT,"x rec 1k crc -  send C");
 				sendData(CHAR_C);
 	
-				updateStatusData("XModem-1KCRC - Wait data...");
+				updateStatusData("XModem-1KCRC - Waiting for data...");
 				
 				XModemReadDataThread xmReadThread = new XModemReadDataThread(handler);
 				xmReadThread.start();
@@ -1358,7 +1310,7 @@ public class J2xxHyperTerm extends Activity
 				} 
 				catch (InterruptedException e) {e.printStackTrace();}
 
-				if(false == bReadDataProcess)
+				if(!bReadDataProcess)
 				{
 					break;
 				}
@@ -1386,7 +1338,7 @@ public class J2xxHyperTerm extends Activity
 			
 			if(MODE_Y_MODEM_1K_CRC_RECEIVE == transferMode)
 			{
-				while(false == bReceiveFirstPacket)
+				while(!bReceiveFirstPacket)
 				{
 					errorCount++;
 					try 
@@ -1395,12 +1347,12 @@ public class J2xxHyperTerm extends Activity
 					} 
 					catch (InterruptedException e) {e.printStackTrace();}
 
-					if(false == bReadDataProcess)
+					if(!bReadDataProcess)
 					{
 						break;
 					}
 					
-					if(false == bDataReceived)
+					if(!bDataReceived)
 					{
 						DLog.e(TYR,"y rec - no packet in, send CharC again");
 						sendData(CHAR_C);
@@ -1423,7 +1375,7 @@ public class J2xxHyperTerm extends Activity
 					}
 					catch (InterruptedException e) {e.printStackTrace();}
 					
-					if(false == bReadDataProcess)
+					if(!bReadDataProcess)
 					{
 						break;
 					}
@@ -1456,11 +1408,11 @@ public class J2xxHyperTerm extends Activity
 		
 		if(buf_save == null) // YModem saved file fail case
 		{
-			midToast("Stop saving data.", Toast.LENGTH_SHORT);			
+			midToast("Stopped saving data.", Toast.LENGTH_SHORT);
 		}
 		else
 		{
-			midToast("Stop saving data and close file.", Toast.LENGTH_SHORT);
+			midToast("Stopped saving data and closed file.", Toast.LENGTH_SHORT);
 			try
 			{
 				buf_save.flush();
@@ -1478,7 +1430,7 @@ public class J2xxHyperTerm extends Activity
 	{
 		if(null == fGetFile)
 		{
-			midToast("Selected file null!", Toast.LENGTH_SHORT);
+			midToast("Selected file is null!", Toast.LENGTH_SHORT);
 			resetSendButton();
 			return;
 		}
@@ -1498,7 +1450,7 @@ public class J2xxHyperTerm extends Activity
 		
 		if(0 == iFileSize)
 		{
-			midToast("Selected file is 0 byte!", Toast.LENGTH_SHORT);
+			midToast("Selected file is empty!", Toast.LENGTH_SHORT);
 			resetSendButton();
 			return;
 		}
@@ -1507,11 +1459,11 @@ public class J2xxHyperTerm extends Activity
 		sFileName = tokens[tokens.length - 1];
 	    
 		if(iFileSize <= 1024)
-			fileNameInfo = "File:" + sFileName + "("+ iFileSize +"Bytes)";
+			fileNameInfo = "File: " + sFileName + "("+ iFileSize +" Bytes)";
 		else if(iFileSize <= 1048576)
-			fileNameInfo = "File:" + sFileName + "("+ new java.text.DecimalFormat("#.00").format(iFileSize/(double)1024) +"KB)";
+			fileNameInfo = "File: " + sFileName + "("+ new java.text.DecimalFormat("#.00").format(iFileSize/(double)1024) +"KB)";
 		else
-			fileNameInfo = "File:" + sFileName + "("+ new java.text.DecimalFormat("#.00").format(iFileSize/(double)1024/1024) +"MB)";
+			fileNameInfo = "File: " + sFileName + "("+ new java.text.DecimalFormat("#.00").format(iFileSize/(double)1024/1024) +"MB)";
 
 		setSendButton();
 		if(MODE_GENERAL_UART == transferMode)
@@ -1520,7 +1472,7 @@ public class J2xxHyperTerm extends Activity
 		}
 		else
 		{
-			updateStatusData(currentProtocol + " - Wait receiver response...");
+			updateStatusData(currentProtocol + " - Awaiting receiver response...");
 		}
 		
 		DLog.e(TT,"sendFileAction transferMode:" + transferMode);
@@ -1591,13 +1543,13 @@ public class J2xxHyperTerm extends Activity
 	
 	void toggleContentHexFormat(boolean setHex)
 	{
-		if(true == bSendButtonClick || true == bLogButtonClick)
+		if(bSendButtonClick || bLogButtonClick)
 		{
-			midToast("Can't change content format during sending file and saving data.",Toast.LENGTH_LONG);
+			midToast("Can't change data format while sending a file or logging data.",Toast.LENGTH_LONG);
 			return;
 		}
 		
-		if(true == setHex)
+		if(setHex)
 		{
 			bContentFormatHex = true;
 			int line = 0;
@@ -1695,17 +1647,17 @@ public class J2xxHyperTerm extends Activity
 	// add data to UI(@+id/ReadValues)
 	void appendData(String data) 
 	{
-		if(true == bContentFormatHex)
+		if(bContentFormatHex)
 		{
 			if(timesMessageHexFormatWriteData < 3)
 			{
 				timesMessageHexFormatWriteData++;
-				midToast("The writing data won��t be showed on data area while content format is hexadecimal format.",Toast.LENGTH_LONG);
+				midToast("The written data will not be echoed while data format is hexadecimal.",Toast.LENGTH_LONG);
 			}
 			return;
 		}
 
-		if(true == bSendHexData)
+		if(bSendHexData)
 		{
 			SpannableString text = new SpannableString(data);
 			text.setSpan(new ForegroundColorSpan(Color.YELLOW), 0, data.length(), 0);
@@ -1746,7 +1698,7 @@ public class J2xxHyperTerm extends Activity
 		scrollView.smoothScrollTo(0, readText.getHeight() + 30);
 	}
 
-	// for uart settings: buad rate, stop bit and etc. selection
+	// for uart settings: baud rate, stop bit and etc. selection
 	class MyOnBaudSelectedListener implements OnItemSelectedListener 
 	{
 		public void onItemSelected(AdapterView<?> parent, View view, int pos, long id)
@@ -1816,7 +1768,7 @@ public class J2xxHyperTerm extends Activity
 			if (flowString.compareTo("None") == 0) 
 			{
 				flowControl = 0;
-				midToast("When using None Flow control option, please consider you know how data flow between the receiver and the transmitter."
+				midToast("When using no flow control, please consider how data will flow between the receiver and the transmitter."
 						 ,Toast.LENGTH_LONG);
 			}
 			else if (flowString.compareTo("CTS/RTS") == 0)
@@ -1847,7 +1799,7 @@ public class J2xxHyperTerm extends Activity
 	
 	public void updatePortNumberSelector()
 	{		
-		midToast(DevCount + " port device attached", Toast.LENGTH_SHORT);
+		midToast("Device attached on port " + DevCount, Toast.LENGTH_SHORT);
 		
 		switch(DevCount)
 		{
@@ -1882,13 +1834,13 @@ public class J2xxHyperTerm extends Activity
 		portSpinner.setAdapter(portAdapter);
 		portAdapter.notifyDataSetChanged();
 	}
-	
+
 	void updateBaudRateSelector(int baudListNum)
 	{
 		if(1 == baudListNum)
 		{
 			baudAdapter = ArrayAdapter.createFromResource(this, R.array.baud_rate_1,
-							R.layout.my_spinner_textview);			
+							R.layout.my_spinner_textview);
 		}
 		else
 		{
@@ -1900,7 +1852,7 @@ public class J2xxHyperTerm extends Activity
 		baudAdapter.setDropDownViewResource(R.layout.my_spinner_textview);
 		baudSpinner.setAdapter(baudAdapter);
 		baudAdapter.notifyDataSetChanged();
-		
+
 		switch(baudRate)
 		{
 		case 300:
@@ -1944,8 +1896,8 @@ public class J2xxHyperTerm extends Activity
 			break;
 		}
 	}
-	
-	public void onAttachedToWindow() 
+
+	public void onAttachedToWindow()
 	{
 		this.getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD);
 		super.onAttachedToWindow();
@@ -1962,9 +1914,9 @@ public class J2xxHyperTerm extends Activity
 
 	public void onBackPressed() 
 	{
-		if(false == bBackButtonClick)
+		if(!bBackButtonClick)
 		{
-			midToast("Are you sure you will exit the program? Press again to exit.", Toast.LENGTH_LONG);
+			midToast("Are you sure you want to exit the program? Press Back again to exit.", Toast.LENGTH_LONG);
 			
 			back_button_click_time = System.currentTimeMillis();			
 			bBackButtonClick = true;
@@ -1980,13 +1932,13 @@ public class J2xxHyperTerm extends Activity
 
 	class ResetBackButtonThread extends Thread
 	{
-		public void run() 
+		public void run()
 		{
-			try 
+			try
 			{
 				Thread.sleep(3500);
 			} catch (InterruptedException e) {e.printStackTrace();}
-			
+
 			bBackButtonClick = false;
 		}
 	}
@@ -2006,7 +1958,7 @@ public class J2xxHyperTerm extends Activity
 	protected void onResume() 
 	{
 		super.onResume();
-		if(null == ftDev || false == ftDev.isOpen())
+		if(null == ftDev || !ftDev.isOpen())
 		{
 			DLog.e(TT,"onResume - reconnect");
 			createDeviceList();
@@ -2019,17 +1971,7 @@ public class J2xxHyperTerm extends Activity
 		}
 	}
 
-	protected void onPause() 
-	{
-		super.onPause();
-	}
-
-	protected void onStop() 
-	{
-		super.onStop();
-	}
-
-	protected void onDestroy() 
+    protected void onDestroy()
 	{
 		disconnectFunction();
 		android.os.Process.killProcess(android.os.Process.myPid());
@@ -2069,7 +2011,7 @@ public class J2xxHyperTerm extends Activity
 		
 		if(ftDev != null)
 		{
-			if( true == ftDev.isOpen())
+			if(ftDev.isOpen())
 			{
 				ftDev.close();
 			}
@@ -2085,13 +2027,13 @@ public class J2xxHyperTerm extends Activity
 		
 		if( currentPortIndex == portIndex
 				&& ftDev != null 
-				&& true == ftDev.isOpen() )
+				&& ftDev.isOpen())
 		{
 			//Toast.makeText(global_context,"Port("+portIndex+") is already opened.", Toast.LENGTH_SHORT).show();
 			return;
 		}
         
-		if(true == bReadTheadEnable)
+		if(bReadTheadEnable)
 		{
 			bReadTheadEnable = false;
 			try 
@@ -2113,16 +2055,16 @@ public class J2xxHyperTerm extends Activity
 
 		if(ftDev == null)
 		{
-			midToast("Open port("+portIndex+") NG!", Toast.LENGTH_LONG);
+			midToast("Open port ("+portIndex+") NG!", Toast.LENGTH_LONG);
 			return;
 		}
 			
-		if (true == ftDev.isOpen())
+		if (ftDev.isOpen())
 		{
 			currentPortIndex = portIndex;
 			//Toast.makeText(global_context, "open device port(" + portIndex + ") OK", Toast.LENGTH_SHORT).show();
 				
-			if(false == bReadTheadEnable)
+			if(!bReadTheadEnable)
 			{	
 				readThread = new ReadThread(handler);
 				readThread.start();
@@ -2130,21 +2072,21 @@ public class J2xxHyperTerm extends Activity
 		}
 		else 
 		{			
-			midToast("Open port("+portIndex+") NG!", Toast.LENGTH_LONG);			
+			midToast("Open port ("+portIndex+") NG!", Toast.LENGTH_LONG);
 		}
 	}
 	
 	DeviceStatus checkDevice()
 	{
-		if(ftDev == null || false == ftDev.isOpen())
+		if(ftDev == null || !ftDev.isOpen())
 		{
-			midToast("Need to connect to cable.",Toast.LENGTH_SHORT);
+			midToast("Please connect the cable.",Toast.LENGTH_SHORT);
 			return DeviceStatus.DEV_NOT_CONNECT;			
 		}
-		else if(false == uart_configured)
+		else if(!uart_configured)
 		{
 			//midToast("CHECK: uart_configured == false", Toast.LENGTH_SHORT);
-			midToast("Need to configure UART.",Toast.LENGTH_SHORT);
+			midToast("Please configure UART.",Toast.LENGTH_SHORT);
 			return DeviceStatus.DEV_NOT_CONFIG;			
 		}
 		
@@ -2175,9 +2117,9 @@ public class J2xxHyperTerm extends Activity
 		default: flowString = new String("None"); break;
 		}				
 
-		uartSettings = "Port " + portIndex + "; UART Setting  -  Baudrate:" + baudRate + "  StopBit:" + stopBit
-				+ "  DataBit:" + dataBit + "  Parity:" + parityString 
-				+ "  FlowControl:" + flowString;
+		uartSettings = "Port " + portIndex + "; UART Setting  -  Baud rate: " + baudRate + "  Stop bits: " + stopBit
+				+ "  Data bits: " + dataBit + "  Parity: " + parityString
+				+ "  Flow control: " + flowString;
 
 		resetStatusData();		
 	}
@@ -2270,7 +2212,7 @@ public class J2xxHyperTerm extends Activity
 
 	void sendData(int numBytes, byte[] buffer)
 	{
-		if (ftDev.isOpen() == false) {
+		if (!ftDev.isOpen()) {
 			DLog.e(TT, "SendData: device not open");
 			Toast.makeText(global_context, "Device not open!", Toast.LENGTH_SHORT).show();
 			return;
@@ -2408,10 +2350,10 @@ public class J2xxHyperTerm extends Activity
 	    	{
     			String temp = currentProtocol;
     			if(sendByteCount <= 10240)
-    				temp += " Send:" + sendByteCount + "B("
+    				temp += " Send: " + sendByteCount + "B("
     						+ new java.text.DecimalFormat("#.00").format(sendByteCount/(iFileSize/(double)100))+"%)";
     			else
-    				temp += " Send:" +  new java.text.DecimalFormat("#.00").format(sendByteCount/(double)1024) + "KB("
+    				temp += " Send: " +  new java.text.DecimalFormat("#.00").format(sendByteCount/(double)1024) + "KB("
     						+ new java.text.DecimalFormat("#.00").format(sendByteCount/(iFileSize/(double)100))+"%)";
     			
     			updateStatusData(temp);
@@ -2420,25 +2362,25 @@ public class J2xxHyperTerm extends Activity
 				
 			case UPDATE_SEND_FILE_DONE:
 			{
-				midToast("Send file Done.", Toast.LENGTH_SHORT);
+				midToast("File sent.", Toast.LENGTH_SHORT);
 
     			String temp = currentProtocol;
     			if(0 == iFileSize)
     			{
-    				temp += " - The sent file is 0 byte";
+    				temp += " - The sent file is empty";
     			}
     			else if(iFileSize < 100)
     			{
-    				temp += " Send:" + sendByteCount + "B("
+    				temp += " Send: " + sendByteCount + "B("
     						+ new java.text.DecimalFormat("#.00").format(sendByteCount*100/iFileSize)+"%)";
     			}
     			else
     			{
 	    			if(sendByteCount <= 10240)
-	    				temp += " Send:" + sendByteCount + "B("
+	    				temp += " Send: " + sendByteCount + "B("
 	    						+ new java.text.DecimalFormat("#.00").format(sendByteCount/(iFileSize/(double)100))+"%)";
 	    			else
-	    				temp += " Send:" + new java.text.DecimalFormat("#.00").format(sendByteCount/(double)1024) + "KB("
+	    				temp += " Send: " + new java.text.DecimalFormat("#.00").format(sendByteCount/(double)1024) + "KB("
 	    						+ new java.text.DecimalFormat("#.00").format(sendByteCount/(iFileSize/(double)100))+"%)";
     			}
         		
@@ -2478,12 +2420,12 @@ public class J2xxHyperTerm extends Activity
 				
 			case MSG_SELECT_FOLDER_NOT_FILE:
 				midToast("Do not pick a file.\n" + 
-        				"Plesae press \"Select Directory\" button to select current directory.", Toast.LENGTH_LONG);
+        				"Please press \"Select Directory\" to select the current directory.", Toast.LENGTH_LONG);
 				break;
 			
 			case MSG_XMODEM_SEND_FILE_TIMEOUT:
 			{
-				String temp = currentProtocol + " - No response when send file."; 
+				String temp = currentProtocol + " - No response when sending file.";
 				midToast(temp, Toast.LENGTH_LONG);
         		updateStatusData(temp);
         		
@@ -2498,7 +2440,7 @@ public class J2xxHyperTerm extends Activity
 			{
     			String temp = currentProtocol;
     			if(totalModemReceiveDataBytes <= 10240)
-    				temp += " Receive " + totalModemReceiveDataBytes + "Bytes";
+    				temp += " Receive " + totalModemReceiveDataBytes + " Bytes";
     			else
     				temp += " Receive " +  new java.text.DecimalFormat("#.00").format(totalModemReceiveDataBytes/(double)1024) + "KBytes";
 
@@ -2512,7 +2454,7 @@ public class J2xxHyperTerm extends Activity
 				
 				String temp = currentProtocol;
     			if(totalModemReceiveDataBytes <= 10240)
-    				temp += " Receive " + totalModemReceiveDataBytes + "Bytes";
+    				temp += " Receive " + totalModemReceiveDataBytes + " Bytes";
     			else
     				temp += " Receive " +  new java.text.DecimalFormat("#.00").format(totalModemReceiveDataBytes/(double)1024) + "KBytes";
         		
@@ -2528,7 +2470,7 @@ public class J2xxHyperTerm extends Activity
 				midToast( currentProtocol + " - No Incoming Data.", Toast.LENGTH_LONG);
     			String temp = currentProtocol;
     			if(totalModemReceiveDataBytes <= 10240)
-    				temp += " Receive " + totalModemReceiveDataBytes + "Bytes";
+    				temp += " Receive " + totalModemReceiveDataBytes + " Bytes";
     			else
     				temp += " Receive " +  new java.text.DecimalFormat("#.00").format(totalModemReceiveDataBytes/(double)1024) + "KBytes";				
         	
@@ -2544,7 +2486,7 @@ public class J2xxHyperTerm extends Activity
 				break;
 				
 			case MSG_MODEM_OPEN_SAVE_FILE_FAIL:
-				midToast(currentProtocol + " - Open save file fail!", Toast.LENGTH_LONG);
+				midToast(currentProtocol + " - Failed to open file.", Toast.LENGTH_LONG);
 				break;
 
 			case MSG_YMODEM_PARSE_FIRST_PACKET_FAIL:
@@ -2553,14 +2495,14 @@ public class J2xxHyperTerm extends Activity
 				break;				
 				
 			case MSG_FORCE_STOP_SEND_FILE:
-				midToast("Stop sending file.", Toast.LENGTH_LONG);
+				midToast("Stopped sending file.", Toast.LENGTH_LONG);
 				break;
 				
 			case UPDATE_ASCII_RECEIVE_DATA_BYTES:
 			{
     			String temp = currentProtocol;
     			if(totalReceiveDataBytes <= 10240)
-    				temp += " Receive " + totalReceiveDataBytes + "Bytes";
+    				temp += " Receive " + totalReceiveDataBytes + " Bytes";
     			else
     				temp += " Receive " +  new java.text.DecimalFormat("#.00").format(totalReceiveDataBytes/(double)1024) + "KBytes";				
 
@@ -2577,7 +2519,7 @@ public class J2xxHyperTerm extends Activity
 				break;
 			
 			case MSG_FORCE_STOP_SAVE_TO_FILE:
-				midToast("Stop saving to file.", Toast.LENGTH_LONG);
+				midToast("Stopped saving to file.", Toast.LENGTH_LONG);
 				break;
 				
 			case UPDATE_ZMODEM_STATE_INFO:
@@ -2585,7 +2527,7 @@ public class J2xxHyperTerm extends Activity
 				
 				if(ZOO == zmodemState)
 				{
-					midToast("ZModem revice file done.", Toast.LENGTH_SHORT);
+					midToast("ZModem received file.", Toast.LENGTH_SHORT);
 				}
 				break;
 				
@@ -2613,14 +2555,14 @@ public class J2xxHyperTerm extends Activity
 
 			case MSG_SPECIAL_INFO:
 				
-				midToast("INFO:" + (String)(msg.obj), Toast.LENGTH_LONG);
+				midToast("INFO: " + (String)(msg.obj), Toast.LENGTH_LONG);
 				break;
 				
 			case MSG_UNHANDLED_CASE:
 				if(msg.obj != null)
-					midToast("UNHANDLED CASE:"+ (String)(msg.obj), Toast.LENGTH_LONG);
+					midToast("UNHANDLED CASE: "+ (String)(msg.obj), Toast.LENGTH_LONG);
 				else
-					midToast("UNHANDLED CASE ?", Toast.LENGTH_LONG);
+					midToast("UNHANDLED CASE?", Toast.LENGTH_LONG);
 				break;
 			default:
 				midToast("NG CASE", Toast.LENGTH_LONG);
@@ -2632,7 +2574,7 @@ public class J2xxHyperTerm extends Activity
 	
 	void setProtocolMode()
 	{
-		if(true == bUartModeTaskSet)
+		if(bUartModeTaskSet)
 		{
 			transferMode = MODE_GENERAL_UART;
 			currentProtocol = "Ascii";
@@ -2697,7 +2639,7 @@ public class J2xxHyperTerm extends Activity
 				} 
 				catch (InterruptedException e) {e.printStackTrace();}
 
-				if(true == bContentFormatHex) // consume input data at hex content format
+				if(bContentFormatHex) // consume input data at hex content format
 				{
 					status = readData(UI_READ_BUFFER_SIZE, readBuffer);
 				}
@@ -2707,13 +2649,13 @@ public class J2xxHyperTerm extends Activity
 					
 					if (0x00 == status) 
 					{
-						if(false == WriteFileThread_start)
+						if(!WriteFileThread_start)
 						{
 							checkZMStartingZRQINIT();
 						}						
 						
 						// save data to file
-						if(true == WriteFileThread_start && buf_save != null)
+						if(WriteFileThread_start && buf_save != null)
 						{
 							try
 							{
@@ -2733,12 +2675,12 @@ public class J2xxHyperTerm extends Activity
 	class ReadThread extends Thread
 	{
 		final int USB_DATA_BUFFER = 8192;
-		
+
 		Handler mHandler;
-		ReadThread(Handler h) 
+		ReadThread(Handler h)
 		{
 			mHandler = h;
-			this.setPriority(MAX_PRIORITY);			
+			this.setPriority(MAX_PRIORITY);
 		}
 
 		public void run() 
@@ -2748,7 +2690,7 @@ public class J2xxHyperTerm extends Activity
 			int iWriteIndex = 0;
 			bReadTheadEnable = true;
 
-			while (true == bReadTheadEnable) 
+			while (bReadTheadEnable)
 			{
 				try 
 				{
@@ -2804,8 +2746,7 @@ public class J2xxHyperTerm extends Activity
 						if(CHAR_G == modemDataBuffer[0])
 						{
 							DLog.e(TXS,"get response - CHAR_G");
-							bModemGetCharG = true;									
-						}
+                        }
 					}
 					else
 					{						
@@ -2844,7 +2785,7 @@ public class J2xxHyperTerm extends Activity
 				}
 			}
 
-			DLog.e(TT, "read thread terminate...");;
+			DLog.e(TT, "read thread terminate...");
 		}		
 	}
 	
@@ -2930,7 +2871,7 @@ public class J2xxHyperTerm extends Activity
 						cal_time_1 = cal_time_2;
 					}
 					
-					if(false == bSendButtonClick)
+					if(!bSendButtonClick)
 					{
 						msg = mHandler.obtainMessage(MSG_FORCE_STOP_SEND_FILE);
 						mHandler.sendMessage(msg);
@@ -3014,12 +2955,12 @@ public class J2xxHyperTerm extends Activity
 						break;
 					}
 	
-					if(false == bLogButtonClick)
+					if(!bLogButtonClick)
 					{
 						break;
 					}
 					
-					// re-send nak/ack for xmomdem revice when there is no packet in for a period of time
+					// re-send nak/ack for xmodem receive when there is no packet in for a period of time
 					if(10 == waitCount)
 					{ 
 						tempDataCount = modemReceiveDataBytes[0];
@@ -3029,7 +2970,7 @@ public class J2xxHyperTerm extends Activity
 						resendCount += 10;
 						if(tempDataCount == modemReceiveDataBytes[0]) // no incoming data
 						{
-							if(true == bDataReceived) // transfer starting
+							if(bDataReceived) // transfer starting
 							{
 								if(0 == getDataState)
 								{
@@ -3068,7 +3009,7 @@ public class J2xxHyperTerm extends Activity
 								}
 							}
 						}
-						else if(false == bDataReceived)
+						else if(!bDataReceived)
 						{
 							DLog.e(TXR,"1 data receiving...");
 							bDataReceived = true;
@@ -3091,7 +3032,7 @@ public class J2xxHyperTerm extends Activity
 					}
 				}
 				
-				if(false == bLogButtonClick)
+				if(!bLogButtonClick)
 				{ 
 					msg = mHandler.obtainMessage(MSG_FORCE_STOP_SAVE_TO_FILE);
 					mHandler.sendMessage(msg);				
@@ -3146,7 +3087,7 @@ public class J2xxHyperTerm extends Activity
 				// parse packet				
 				bXModemPktParseOK = parseModemPacket();
 				
-				if(true == bReceiveFirstPacket)
+				if(bReceiveFirstPacket)
 				{
 					check_data_time_2 =  System.currentTimeMillis();
 					if((check_data_time_2 - check_data_time_1) >= 200) // update progress every 200 milliseconds
@@ -3157,13 +3098,13 @@ public class J2xxHyperTerm extends Activity
 					}
 				}
 				
-				if(true == bXModemPktParseOK)
+				if(bXModemPktParseOK)
 				{
 					DLog.e(TXR, " x rec packet OK pkt:"+receivedPacketNumber);
 					xmodemErrorCount = 0;
 					receivedPacketNumber++;
 					// write received data to data area or update user area
-					if(false == bReceiveFirstPacket)
+					if(!bReceiveFirstPacket)
 					{
 						// notify receiving process starting
 						check_data_time_1 = System.currentTimeMillis();
@@ -3240,12 +3181,12 @@ public class J2xxHyperTerm extends Activity
 
 			if(instream != null)
 			{
-				while(true == bSendFileProcess)
+				while(bSendFileProcess)
 				{
-					if(true == bSendEOT)
+					if(bSendEOT)
 					{
 						check_timeout_1 = System.currentTimeMillis();
-						while(false == bModemGetAck)
+						while(!bModemGetAck)
 						{
 							DLog.e(TXS,"EOT wait xModemGetAck == false");
 							try 
@@ -3269,14 +3210,14 @@ public class J2xxHyperTerm extends Activity
 						continue;
 					}
 					
-					if(false == bStartSendPacket)
+					if(!bStartSendPacket)
 					{
 						// wait receiver ask to send file
 						check_timeout_1 = System.currentTimeMillis();
 												
-						while(  ((MODE_X_MODEM_CHECKSUM_SEND == transferMode) && (false == bModemGetNak))
-							  ||((MODE_X_MODEM_CRC_SEND == transferMode) && (false == bModemGetCharC))
-							  ||((MODE_X_MODEM_1K_CRC_SEND == transferMode) && (false == bModemGetCharC)))  // not CharG
+						while(  ((MODE_X_MODEM_CHECKSUM_SEND == transferMode) && (!bModemGetNak))
+							  ||((MODE_X_MODEM_CRC_SEND == transferMode) && (!bModemGetCharC))
+							  ||((MODE_X_MODEM_1K_CRC_SEND == transferMode) && (!bModemGetCharC)))  // not CharG
 						{
 							DLog.e(TXS,"checkCondition == false, wait... transferMode:"+currentProtocol);
 							try 
@@ -3299,7 +3240,7 @@ public class J2xxHyperTerm extends Activity
 					{
 						// wait receiver notification
 						int noAckCount = 0;
-						while(false == bModemGetAck && false == bModemGetNak)
+						while(!bModemGetAck && !bModemGetNak)
 						{
 							noAckCount++;
 							DLog.e(TXS,"wait xModemGetAck == false && xModemGetNak == false noAckCount:"+noAckCount);
@@ -3320,19 +3261,18 @@ public class J2xxHyperTerm extends Activity
 					}								
 					
 					// ACK - send next packet
-					if(true == bModemGetAck || false == bStartSendPacket)
+					if(bModemGetAck || !bStartSendPacket)
 					{		
 						errorCount = 0;
 						DLog.e(TXS,"ACK - send next packet");
-						if(false == bStartSendPacket)
+						if(!bStartSendPacket)
 						{
 							DLog.e(TXS,"ACK - send next packet - 1st case");
 							cal_time_1 = System.currentTimeMillis();
 							bStartSendPacket = true;
 							bModemGetNak = false;
 							bModemGetCharC = false;
-							bModemGetCharG = false;
-							msg = mHandler.obtainMessage(UPDATE_SEND_FILE_STATUS);
+                            msg = mHandler.obtainMessage(UPDATE_SEND_FILE_STATUS);
 							mHandler.sendMessage(msg);							
 						}
 						bModemGetAck = false;
@@ -3482,13 +3422,13 @@ public class J2xxHyperTerm extends Activity
 						}
 					}
 					// NAK - Re-send previous packet
-					else if(true == bModemGetNak)
+					else if(bModemGetNak)
 					{
 						totalErrorCount++;
 						errorCount++;
 						if(errorCount > 10)
 						{
-							DLog.e(TXS,"Get NAK too many times, stop transer");							
+							DLog.e(TXS,"Get NAK too many times, stop transfer");
 							bSendFileProcess = false;		
 							continue;
 						}
@@ -3509,7 +3449,7 @@ public class J2xxHyperTerm extends Activity
 		    			}
 					}
 					
-					if(false == bSendButtonClick)
+					if(!bSendButtonClick)
 					{
 						break;
 					}
@@ -3519,13 +3459,13 @@ public class J2xxHyperTerm extends Activity
 			transferMode = MODE_GENERAL_UART;
 			bUartModeTaskSet = true;
 			
-			if(true == bSendFileDone)
+			if(bSendFileDone)
 			{
 				end_time = System.currentTimeMillis();			
 				msg = mHandler.obtainMessage(UPDATE_SEND_FILE_DONE);
 				mHandler.sendMessage(msg);
 			}
-			else if(false == bSendButtonClick)
+			else if(!bSendButtonClick)
 			{
 				msg = mHandler.obtainMessage(MSG_FORCE_STOP_SEND_FILE);
 				mHandler.sendMessage(msg);
@@ -3565,7 +3505,7 @@ public class J2xxHyperTerm extends Activity
 		
         DLog.e(TT,"pktnum:"+pktnum+" notpktnum:"+notpktnum);
 		
-		if(MODE_Y_MODEM_1K_CRC_RECEIVE == transferMode && 0 == pktnum && false == bReceiveFirstPacket) // y modem:duplicated file info packet 
+		if(MODE_Y_MODEM_1K_CRC_RECEIVE == transferMode && 0 == pktnum && !bReceiveFirstPacket) // y modem:duplicated file info packet
 		{
 			bDuplicatedPacket = true;
 			DLog.e(TYR,"pktnum:"+pktnum+" duplicated file info packet");
@@ -3629,7 +3569,7 @@ public class J2xxHyperTerm extends Activity
 		}		
                 modemReceiveDataBytes[0] -= packetSize;
 
-		if(true == parseOK)
+		if(parseOK)
 		{
 	        if(MODE_X_MODEM_CHECKSUM_RECEIVE == transferMode)
 	        {
@@ -3678,7 +3618,7 @@ public class J2xxHyperTerm extends Activity
 		}        
                 
 		// save data to file
-		if(true == parseOK && true == WriteFileThread_start && buf_save != null)
+		if(parseOK && WriteFileThread_start && buf_save != null)
 		{
 			try
 			{
@@ -3748,9 +3688,9 @@ public class J2xxHyperTerm extends Activity
 			cal_time_1 = System.currentTimeMillis();
 			ymodemState = Y_MODEM_WAIT_ASK_SEND_FILE;
 			
-			while(true == bSendFileProcess)
+			while(bSendFileProcess)
 			{	
-				if(false == bSendButtonClick)
+				if(!bSendButtonClick)
 					break;
 				
 				if(ymodemState >= Y_MODEM_START_SEND_FILE)
@@ -4053,7 +3993,7 @@ public class J2xxHyperTerm extends Activity
 				msg = mHandler.obtainMessage(UPDATE_SEND_FILE_DONE);
 				mHandler.sendMessage(msg);
 			}
-			else if(false == bSendButtonClick)
+			else if(!bSendButtonClick)
 			{
 				msg = mHandler.obtainMessage(MSG_FORCE_STOP_SEND_FILE);
 				mHandler.sendMessage(msg);
@@ -4081,7 +4021,7 @@ public class J2xxHyperTerm extends Activity
 		
 		do
 		{
-			if(false == bSendButtonClick)
+			if(!bSendButtonClick)
 				return DATA_NONE;
 			
 			if(iTotalBytes > 0)
@@ -4178,7 +4118,7 @@ public class J2xxHyperTerm extends Activity
 					}
 					catch (InterruptedException e) {e.printStackTrace();}
 					
-					if(false == bLogButtonClick)
+					if(!bLogButtonClick)
 					{
 						break;
 					}
@@ -4212,7 +4152,7 @@ public class J2xxHyperTerm extends Activity
 						break;
 					}
 
-					if(false == bLogButtonClick)
+					if(!bLogButtonClick)
 					{
 						break;
 					}
@@ -4227,7 +4167,7 @@ public class J2xxHyperTerm extends Activity
 						resendCount += 10;
 						if(tempDataCount == modemReceiveDataBytes[0] ) // no incoming data
 						{
-							if(true == bDataReceived) // transfer starting
+							if(bDataReceived) // transfer starting
 							{
 								if(0 == getDataState)
 								{
@@ -4266,7 +4206,7 @@ public class J2xxHyperTerm extends Activity
 								}
 							}
 						}
-						else if(false == bDataReceived)
+						else if(!bDataReceived)
 						{
 							bDataReceived = true;
 							msg = mHandler.obtainMessage(UPDATE_MODEM_RECEIVE_DATA);
@@ -4288,7 +4228,7 @@ public class J2xxHyperTerm extends Activity
 					}
 				}
 
-				if(false == bLogButtonClick)
+				if(!bLogButtonClick)
 				{
 					msg = mHandler.obtainMessage(MSG_FORCE_STOP_SAVE_TO_FILE);
 					mHandler.sendMessage(msg);				
@@ -4322,7 +4262,7 @@ public class J2xxHyperTerm extends Activity
 
 				status = readData(ymodemPacketSize, modemDataBuffer);
 
-				if(true == bGetEOT)
+				if(bGetEOT)
 				{
 					DLog.e(TYR,"Get last packet after EOT send ack");
 					sendData(ACK);
@@ -4346,12 +4286,12 @@ public class J2xxHyperTerm extends Activity
 						+"] 2:["+Integer.toHexString(modemDataBuffer[2])+"]" );
 
 
-				if(false == bReceiveFirstPacket)
+				if(!bReceiveFirstPacket)
 				{
 					// parse first packet for filename, filesize
 					bYModemPktParseOK = parseYModemFirstPacket();
 
-					if(false == bYModemPktParseOK)
+					if(!bYModemPktParseOK)
 					{
 						parseFirstPktCount++;
 
@@ -4373,7 +4313,7 @@ public class J2xxHyperTerm extends Activity
 							continue;
 						}
 					}
-					else if(false == openModemSaveFile())
+					else if(!openModemSaveFile())
 					{
 						DLog.e(TYR,"YModem: open save file fail!");						
 						msg = mHandler.obtainMessage(MSG_MODEM_OPEN_SAVE_FILE_FAIL);
@@ -4392,7 +4332,7 @@ public class J2xxHyperTerm extends Activity
 					bYModemPktParseOK = parseModemPacket();
 				}
 
-				if(true == bReceiveFirstPacket)
+				if(bReceiveFirstPacket)
 				{
 					check_data_time_2 =  System.currentTimeMillis();
 					if((check_data_time_2 - check_data_time_1) >= 200) // update progress every 200 milliseconds
@@ -4403,13 +4343,13 @@ public class J2xxHyperTerm extends Activity
 					}
 				}
 
-				if(true == bYModemPktParseOK)
+				if(bYModemPktParseOK)
 				{
 					DLog.e(TYR, " Y rec packet OK pkt:"+receivedPacketNumber);
 
 					ymodemErrorCount = 0;
 					// write received data to data area or update user area
-					if(false == bReceiveFirstPacket)
+					if(!bReceiveFirstPacket)
 					{
 						// notify receiving process starting
 						check_data_time_1 = System.currentTimeMillis();
@@ -4421,7 +4361,7 @@ public class J2xxHyperTerm extends Activity
 						sendData(ACK);
 						ackData = CHAR_C;
 					}
-					else if(true == bDuplicatedPacket)
+					else if(bDuplicatedPacket)
 					{
 						bDuplicatedPacket = false;
 						ackData = ACK;
@@ -4488,7 +4428,7 @@ public class J2xxHyperTerm extends Activity
 			parseOK = false;	
 		}
 
-		if(true == parseOK)
+		if(parseOK)
 		{
 			int i = 0;
 			while(modemDataBuffer[i+3] != 0x00)
@@ -4561,9 +4501,9 @@ public class J2xxHyperTerm extends Activity
 			cal_time_1 = System.currentTimeMillis();
 			start_time = System.currentTimeMillis();
 			
-			while(true == bSendFileProcess)
+			while(bSendFileProcess)
 			{
-				if(false == bSendButtonClick)	
+				if(!bSendButtonClick)
 					break;
 				
 				if(zmodemState >= ZDATA)
@@ -4613,7 +4553,7 @@ public class J2xxHyperTerm extends Activity
 				
 				case ZRINIT:
 					
-					if(true == zmWaitReadData(21, 0, 5000))
+					if(zmWaitReadData(21, 0, 5000))
 					{
 						int frame = zmGetFrameType(modemDataBuffer, 0);
 						if(ZRINIT == frame)
@@ -4700,7 +4640,7 @@ public class J2xxHyperTerm extends Activity
 //				    final int ZNAK = 6;      /* Last packet was garbled */
 //				    final int ZABORT = 7;    /* Abort batch transfers */
 					
-					if(true == zmWaitReadData(21, 0, 5000))
+					if(zmWaitReadData(21, 0, 5000))
 					{
 						int frame = zmGetFrameType(modemDataBuffer, 0);
 
@@ -4819,7 +4759,7 @@ public class J2xxHyperTerm extends Activity
 					else
 					{
 						DLog.e(TZS,"ZDATA unhandle case!!");
-						if(true == INTERNAL_DEBUG_TRACE)
+						if(INTERNAL_DEBUG_TRACE)
 						{
 							msg = mHandler.obtainMessage(MSG_UNHANDLED_CASE, String.valueOf("ZM send: ZDATA unhandle case!!"));
 							mHandler.sendMessage(msg);
@@ -4860,7 +4800,7 @@ public class J2xxHyperTerm extends Activity
 
 					sendData(j, tempBuffer); // send ZEOF
 					
-					if(true == zmWaitReadData(21, 0, 5000))
+					if(zmWaitReadData(21, 0, 5000))
 					{
 						int frame = zmGetFrameType(modemDataBuffer, 0);
 						if(ZRINIT == frame)
@@ -4908,7 +4848,7 @@ public class J2xxHyperTerm extends Activity
 					
 				case ZFIN_ACK:
 				{ 
-					if(true == zmWaitReadData(20, 0, 10000)) // get ZFIN
+					if(zmWaitReadData(20, 0, 10000)) // get ZFIN
 					{		
 						int frame = zmGetFrameType(modemDataBuffer, 0);
 						if(ZFIN == frame)
@@ -4954,13 +4894,13 @@ public class J2xxHyperTerm extends Activity
 			transferMode = MODE_GENERAL_UART;
 			bUartModeTaskSet = true;
 
-			if(true == bSendFileDone)
+			if(bSendFileDone)
 			{
 				end_time = System.currentTimeMillis();			
 				msg = mHandler.obtainMessage(UPDATE_SEND_FILE_DONE);
 				mHandler.sendMessage(msg);
 			}
-			else if(false == bSendButtonClick)
+			else if(!bSendButtonClick)
 			{
 				msg = mHandler.obtainMessage(MSG_FORCE_STOP_SEND_FILE);
 				mHandler.sendMessage(msg);
@@ -4997,7 +4937,7 @@ public class J2xxHyperTerm extends Activity
 			while(bReadDataProcess)
 			{
 				
-				if(false == bLogButtonClick)
+				if(!bLogButtonClick)
 				{ 
 					msg = mHandler.obtainMessage(MSG_FORCE_STOP_SAVE_TO_FILE);
 					mHandler.sendMessage(msg);				
@@ -5019,7 +4959,7 @@ public class J2xxHyperTerm extends Activity
 				{
 				case ZRQINIT:
 					DLog.e(TZR,"state: ZRQINIT");
-					if(true == zmWaitReadData(3, 0, 20000))
+					if(zmWaitReadData(3, 0, 20000))
 					{
 						if(modemDataBuffer[0] == 0x72 &&  // r
 						   modemDataBuffer[1] == 0x7A &&  // z
@@ -5028,7 +4968,7 @@ public class J2xxHyperTerm extends Activity
 							start_time = System.currentTimeMillis();
 							DLog.e(TZR,"Get startup string");
 							
-							if(true == zmWaitReadData(21, 0, 10000))
+							if(zmWaitReadData(21, 0, 10000))
 							{
 								if(zmGetHeaderType() > 0)
 								{
@@ -5100,7 +5040,7 @@ public class J2xxHyperTerm extends Activity
 					
 				case ZFILE:
 					
-					if(true == zmWaitReadData(10, 0, 10000))
+					if(zmWaitReadData(10, 0, 10000))
 					{
 						if(modemDataBuffer[0] == ZPAD &&
 						   modemDataBuffer[1] == ZDLE &&
@@ -5109,7 +5049,7 @@ public class J2xxHyperTerm extends Activity
 						{
 							DLog.e(TT,"ZFILE packet");
 							// file info packet size:  fname + 1 + fsize + 1 + 5 -> 9
-							if(true == zmWaitReadData(9, 0, 1000))
+							if(zmWaitReadData(9, 0, 1000))
 							{							
 								getDataNum[0] = 9;
 							}
@@ -5125,7 +5065,7 @@ public class J2xxHyperTerm extends Activity
 							
 							zmParseFileInfo(getDataNum[0]);
 							
-							if(false == openModemSaveFile())
+							if(!openModemSaveFile())
 							{
 								DLog.e(TZR,"ZModem: open save file fail!");						
 								msg = mHandler.obtainMessage(MSG_MODEM_OPEN_SAVE_FILE_FAIL);
@@ -5186,7 +5126,7 @@ public class J2xxHyperTerm extends Activity
 					break;
 					
 				case ZDATA_HEADER:
-					if(true == zmWaitReadData(10, 0, 10000))
+					if(zmWaitReadData(10, 0, 10000))
 					{
 						DLog.e(TZR,"ZDATA_HEADER:");
 						for(int i=0;i<10;i++)
@@ -5239,7 +5179,7 @@ public class J2xxHyperTerm extends Activity
 					
 				case ZFIN:
 				{ 
-					if(true == zmWaitReadData(20, 0, 10000)) // get ZFIN
+					if(zmWaitReadData(20, 0, 10000)) // get ZFIN
 					{
 						tempBuffer[0] = 0x2A; // ZPAD
 						tempBuffer[1] = 0x2A; // ZPAD
@@ -5274,7 +5214,7 @@ public class J2xxHyperTerm extends Activity
 					break;
 					
 				case ZOO:
-					if(true == zmWaitReadData(2, 0, 10000)) // get ZFIN
+					if(zmWaitReadData(2, 0, 10000)) // get ZFIN
 					{
 						if(0x4F == modemDataBuffer[0] && 0x4F == modemDataBuffer[1])
 						{
@@ -5315,13 +5255,13 @@ public class J2xxHyperTerm extends Activity
 			transferMode = MODE_GENERAL_UART;
 			bUartModeTaskSet = true;
 			end_time = System.currentTimeMillis();
-			if(true == bFileReciveDone)
+			if(bFileReciveDone)
 			{
 				DLog.e(TT, "end 1");
 				msg = mHandler.obtainMessage(UPDATE_MODEM_RECEIVE_DONE);
 				mHandler.sendMessage(msg);				
 			}
-			else if(true == bLogButtonClick)
+			else if(bLogButtonClick)
 			{
 				DLog.e(TT, "end 2");
 				msg = mHandler.obtainMessage(MSG_MODEM_RECEIVE_PACKET_TIMEOUT);
@@ -5393,7 +5333,7 @@ public class J2xxHyperTerm extends Activity
 			} 
 			catch (InterruptedException e) {e.printStackTrace();}
 			
-			if(false == bLogButtonClick && false == bSendButtonClick)
+			if(!bLogButtonClick && !bSendButtonClick)
 			{
 				return 0;
 			}
@@ -5442,7 +5382,7 @@ public class J2xxHyperTerm extends Activity
 				}
 				else
 				{
-					if(true == INTERNAL_DEBUG_TRACE)
+					if(INTERNAL_DEBUG_TRACE)
 					{
 						Message msg = handler.obtainMessage(MSG_UNHANDLED_CASE, String.valueOf("zmCheckZEOF unhandle case") );
 						handler.sendMessage(msg);
@@ -5479,7 +5419,7 @@ public class J2xxHyperTerm extends Activity
 			} 
 			catch (InterruptedException e) {e.printStackTrace();}
 			
-			if(false == bLogButtonClick && false == bSendButtonClick)
+			if(!bLogButtonClick && !bSendButtonClick)
 			{
 				return false;
 			}
